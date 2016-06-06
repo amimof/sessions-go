@@ -13,6 +13,7 @@ type ViewAttribute struct {
   Height int
   PosX int
   PosY int
+  Border bool
 }
 
 type View struct {
@@ -20,20 +21,72 @@ type View struct {
   Title string
   FgColor ui.Attribute
   BgColor ui.Attribute
-  Border bool
   BorderFgColor ui.Attribute
   BorderBgColor ui.Attribute
 }
 
 type List struct {
+  View *View
   ViewAttribute
   Hosts []string
+  Active int
+}
+
+func (l List) Length() int {
+  return len(l.Hosts)
+}
+
+func (l List) Next() {
+  l.SetActive(l.GetActive()+1)
+}
+
+func (l List) Prev() {
+  l.SetActive(l.GetActive()-1)
+}
+
+
+func (l List) SetActive(n int) {
+  l.ClearActive()
+  a := n
+  // Select last index if out of range
+  if n > l.Length()-1 {
+     a = l.Length()-1
+  } else {
+    a = n
+  }
+  // Select first index if out of range
+  if n < 0 {
+    a = 0
+  } else {
+    a = n
+  }
+
+  for j, c := range l.Hosts[a] {
+    ui.SetCell(j+l.PosX, a+l.PosY, c, ui.ColorWhite, ui.ColorGreen)
+    l.Active = a
+  }
+}
+
+func (l List) GetActive() int {
+  return l.Active
+}
+
+func (l List) ClearActive() {
+  l.Draw()
 }
 
 func (l List) Draw() {
   for i, h := range l.Hosts {
     for j, c := range h {
-      ui.SetCell(j+l.PosX, i+l.PosY, c, ui.ColorCyan, ui.ColorDefault)  
+      ui.SetCell(j+l.PosX, i+l.PosY, c, ui.ColorCyan, ui.ColorDefault)
+    }
+  }
+}
+
+func (l List) Clear() {
+  for i, h := range l.Hosts {
+    for j := range h {
+      ui.SetCell(j+l.PosX, i+l.PosY, ' ', ui.ColorDefault, ui.ColorDefault)
     }
   }
 }
@@ -92,10 +145,10 @@ func NewView() View {
     // PosY: 0,
     FgColor: ui.ColorDefault,
     BgColor: ui.ColorDefault,
-    Border: true,
     BorderFgColor: ui.ColorDefault,
     BorderBgColor: ui.ColorDefault,
   }
+  v.Border = true
   v.Width = 5
   v.Height = 5
   v.PosX = 0
@@ -105,6 +158,7 @@ func NewView() View {
 
 func (v View) NewList() List {
   l := List{
+    View: &v,
     Hosts: []string{"localhost", "127.0.0.1", "pod.amimof.com"},
   }
   l.Width = 10

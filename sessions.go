@@ -6,9 +6,10 @@ import (
   "fmt"
 )
 
+var ah int
 var bbw, bbh int
 var backbuffer []ui.Cell
-var hosts []string = []string{"gotsva1012.volvocars.biz", "gotsva1014.volvocars.biz", "gotsvl2057.volvocars.biz", "gotsvl4056.got.volvocars.biz"}
+var hosts []string = []string{"gotsva1012.volvocars.biz", "gotsva1014.volvocars.biz", "gotsvl2057.volvocars.biz", "gotsvl4056.got.volvocars.biz", "gotsvl4056.got.volvocars.biz", "gotsvl4056.got.volvocars.biz", "gotsvl4056.got.volvocars.biz"}
 
 func print_tb(x, y int, fg, bg ui.Attribute, msg string) {
 	for _, c := range msg {
@@ -31,21 +32,18 @@ func redrawWidgets() {
   view.Height = bbh
   view.Draw()
 
-  list := view.NewList()
+  hostv := lib.NewView()
+  hostv.Title = "Hosts"
+  hostv.Width = 32
+  hostv.Height = 15
+  hostv.PosX = 10
+  hostv.PosY = 10
+  hostv.Draw()
+
+  list := hostv.NewList()
+  list.Hosts = hosts
   list.Draw()
-
-  // hostv := util.NewView()
-  // hostv.Title = "Hosts"
-  // hostv.Width = 50
-  // hostv.Height = 10
-  // hostv.PosX = 10
-  // hostv.PosY = 10
-
-
-  // Host list
-  // for index, host := range hosts {
-  //   printf_tb(10, 10+index, ui.ColorDefault, ui.ColorYellow, " %v ", host)
-  // }
+  list.SetActive(list.GetActive()+ah)
 
   printf_tb(0, bbh-1, ui.ColorDefault, ui.ColorCyan, "ESC: quit | Shift+H: Help | Arrows : Select")
 }
@@ -79,6 +77,12 @@ func main() {
     case ui.EventKey:
       if ev.Key == ui.KeyEsc {
         break mainloop
+      }
+      if ev.Key == ui.KeyArrowDown {
+        ah = ah+1
+      }
+      if ev.Key == ui.KeyArrowUp {
+        
       }
     case ui.EventResize:
       resizeBackBuffer(ev.Width, ev.Height)

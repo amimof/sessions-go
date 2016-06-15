@@ -23,35 +23,33 @@ func printf_tb(x, y int, fg, bg ui.Attribute, format string, args ...interface{}
 	print_tb(x, y, fg, bg, s)
 }
 
-func redrawWidgets() {
-
-  // Draw the workspace
-  view := lib.NewView()
-  view.Title = "Sessions v1.0.0b"
-  view.Width = bbw
-  view.Height = bbh
-  view.Draw()
-
-  hostv := lib.NewView()
-  hostv.Title = "Hosts"
-  hostv.Width = 32
-  hostv.Height = 15
-  hostv.PosX = 10
-  hostv.PosY = 10
-  hostv.Draw()
-
-  list := hostv.NewList()
-  list.Hosts = hosts
-  list.Draw()
-  list.SetActive(list.GetActive()+ah)
-
-  printf_tb(0, bbh-1, ui.ColorDefault, ui.ColorCyan, "ESC: quit | Shift+H: Help | Arrows : Select")
-}
-
-func redraw(mx, my int) {
+func redraw() {
   ui.Clear(ui.ColorDefault, ui.ColorDefault)
   copy(ui.CellBuffer(), backbuffer)
-  redrawWidgets()
+
+  // Draw the workspace
+  main := lib.NewView()
+  main.Title = "Sessions v1.0.0b"
+  main.Width = bbw
+  main.Height = bbh
+  main.Border.StyleLeft, main.Border.StyleRight, main.Border.StyleTop, main.Border.StyleBottom = ' ', ' ', ' ', ' '
+  main.Border.ColorBgTop = ui.ColorCyan
+  main.Border.ColorFgTop = ui.ColorDefault
+
+  // Draw the view holding the host list
+  hostv := lib.NewView()
+  hostv.Title = "Hosts"
+  hostv.Width = 50
+  hostv.Height = 10
+  hostv.PosX = 10
+  hostv.PosY = 10
+
+  // Draw
+  hostl := hostv.NewList()
+  hostl.Hosts = hosts
+  //hostl.SetActive(1)
+  lib.Render(main, hostv)
+
   ui.Flush()
 }
 
@@ -69,25 +67,29 @@ func main() {
   }
   defer ui.Close()
 
+  // Init views
+  w, h := ui.Size()
+  resizeBackBuffer(w, h)
+  redraw()
+
   ui.SetInputMode(ui.InputEsc)
   mainloop:
   for {
-    mx, my := -1, -1
     switch ev := ui.PollEvent(); ev.Type {
     case ui.EventKey:
       if ev.Key == ui.KeyEsc {
         break mainloop
       }
       if ev.Key == ui.KeyArrowDown {
-        ah = ah+1
+        //hostl.SetActive(hostl.GetActive()+1)
       }
       if ev.Key == ui.KeyArrowUp {
-        
+        //hostl.SetActive(hostl.GetActive()-1)
       }
     case ui.EventResize:
       resizeBackBuffer(ev.Width, ev.Height)
     }
-    redraw(mx, my)
+    redraw()
   }
 
 }

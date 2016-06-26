@@ -2,7 +2,7 @@ package lib
 
 import (
   ui "github.com/nsf/termbox-go"
-  "fmt"
+  //"fmt"
 )
 
 type Block interface {
@@ -40,11 +40,10 @@ type View struct {
   BgColor ui.Attribute
   BorderFgColor ui.Attribute
   BorderBgColor ui.Attribute
-  List List
+  List *List
 }
 
 type List struct {
-  View *View
   ViewAttribute
   Hosts []string
   Active int
@@ -55,20 +54,21 @@ func (l *List) Length() int {
 }
 
 func (l *List) Next() {
-  l.SetActive(l.GetActive()+1)
+  l.SetActive(l.Active+1)
 }
 
 func (l *List) Prev() {
-  l.SetActive(l.GetActive()-1)
+  l.SetActive(l.Active-1)
 }
 
 
 func (l *List) SetActive(n int) {
+
   //l.ClearActive()
   a := n
   // Select last index if out of range
-  if n > l.Length()-1 {
-     a = l.Length()-1
+  if n >= len(l.Hosts)-1 {
+     a = len(l.Hosts)-1
   } else {
     a = n
   }
@@ -79,13 +79,12 @@ func (l *List) SetActive(n int) {
     a = n
   }
 
-  fmt.Println(a)
-  fmt.Println(l.Hosts)
-
-  // for j, c := range l.Hosts[0] {
-  //   ui.SetCell(j+l.PosX, a+l.PosY, c, ui.ColorWhite, ui.ColorGreen)
-  //   l.Active = a
-  // }
+  for j, c := range l.Hosts[a] {
+    ui.SetCell(j+l.PosX, a+l.PosY, c, ui.ColorWhite, ui.ColorGreen)
+  }
+  l.Active = a
+  //fmt.Println(len(l.Hosts))
+  //fmt.Println(l.Active)
 }
 
 func (l *List) GetActive() int {
@@ -110,7 +109,7 @@ func (l *List) Draw() {
       ui.SetCell(j+l.PosX, i+l.PosY, c, ui.ColorCyan, ui.ColorDefault)
     }
   }
-  //l.SetActive(1)
+  l.SetActive(l.Active)
 }
 
 func (v *View) Draw() {
@@ -123,8 +122,13 @@ func (v *View) Draw() {
     }
   }
 
-  // Draw list
-  v.List.Draw()
+  //v.List.Hosts = []string{"test", "test", "test"}
+
+  // Draw list if any on the view
+  if v.List != nil {
+    v.List.Draw()
+  }
+  
 
   if v.Border.Visible {
     for i := 1; i < v.Height; i++ {
@@ -158,6 +162,17 @@ func (v *View) Draw() {
 		i++
 	}
 
+}
+
+func Init() error {
+  if err := ui.Init(); err != nil {
+    return err
+  }
+  return nil
+}
+
+func Close() {
+  ui.Close()
 }
 
 // Call Draw method on all views
@@ -200,15 +215,15 @@ func NewView() *View {
   return v
 }
 
-func (v *View) NewList() List {
-  l := List{
+func (v *View) NewList() *List {
+  l := &List{
     Hosts: []string{},
   }
   l.Width = 10
   l.Height = 5
   l.PosX = v.PosX+2
   l.PosY = v.PosY+2
-  l.Active = 1
-  v.List = l
-  return v.List
+  l.Active = 0
+  v.List = &(*l)
+  return l
 }

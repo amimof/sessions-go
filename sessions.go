@@ -83,10 +83,11 @@ func main() {
   textv.PosX = hostv.Width + 2
   textv.PosY = hostv.PosY
   textv.Theme = views.ThemeSimple
-  
+
   // Draw the box 
   textb := textv.NewTextBox()
   textb.Text = "Hello World!"
+  textb.AutoWidth = false
   
 
   // Init views

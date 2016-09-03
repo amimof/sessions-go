@@ -52,6 +52,8 @@ type TextBox struct {
  * 
  */
 
+
+// DEPRECATED
 func cut(s string, n int) string {
   return s
 }
@@ -92,7 +94,12 @@ func (l *List) SetActive(n int) {
     a = n
   }
 
-  for j, c := range l.Hosts[a] {
+
+  host := l.Hosts[a]
+  if (len(host)-2) >= l.View.Width {
+    host = host[0:(l.View.Width)-7]+"..."  
+  }
+  for j, c := range host {
     ui.SetCell(j+l.PosX, a+l.PosY, c, ui.ColorWhite, ui.ColorGreen)
   }
   l.Active = a
@@ -132,7 +139,21 @@ func (l *List) Draw() {
 }
 
 func (t *TextBox) Draw() {
-  for i, c := range t.Text {
+
+  text := t.Text
+
+  // Compensate for string that are wider than the actual view. Increase the view width if so. 
+  // But only do so if AutoWidth if true
+  if (len(t.Text)+2) >= t.View.Width {
+    if t.AutoWidth {
+      t.View.Width = len(t.Text)+4
+    } else {
+      // If AutoWidth is false, cut the text that doesn't fit into the view
+      text = t.Text[0:(t.View.Width-7)]+"..."
+    }
+  } 
+
+  for i, c := range text {
     ui.SetCell(i+t.PosX, t.PosY, c, ui.ColorDefault, ui.ColorDefault)
   }
 }
@@ -161,16 +182,6 @@ func (v *View) Draw() {
 
   // Draw text box if any on the view
   if v.TextBox != nil {
-    // Compensate for string that are wider than the actual view. Increase the view width if so. 
-    // But only do so if AutoWidth if true
-    if (len(v.TextBox.Text)+2) >= v.Width {
-      if v.TextBox.AutoWidth {
-        v.Width = len(v.TextBox.Text)+4
-      } else {
-        // If AutoWidth is false, cut the text that doesn't fit into the view
-        v.TextBox.Text = v.TextBox.Text[0:(v.Width-7)]+"..."
-      }
-    } 
     v.TextBox.Draw()
   }
   
@@ -231,7 +242,7 @@ func NewView() *View {
   v := &View{
     FgColor: ui.ColorDefault,
     BgColor: ui.ColorDefault,
-    Theme: GetTheme("default"),
+    Theme: ThemeDefault,
   }
 
   // Size

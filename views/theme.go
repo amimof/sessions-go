@@ -41,7 +41,7 @@ var ThemeDefault Theme = Theme{
 
 		// Bottom Border
 		ColorFgBottom: ui.ColorDefault,
-		ColorBgBottom: ui.ColorGreen,
+		ColorBgBottom: ui.ColorYellow,
 
 		// Left Border
 		ColorFgLeft: ui.ColorDefault,
